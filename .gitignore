@@ -1,0 +1,18 @@
+# Environments
+.venv/
+venv/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Testing
+.pytest_cache/
+pytest.ini
+
+# Data files (Binary/Large files)
+*.npy
+*.npz
+*.prof

@@ -1,0 +1,13 @@
+from typing import Protocol
+
+
+class StatCallback(Protocol):
+    def on_start(self): ...
+
+    def on_episode_start(self, episode: int): ...
+
+    def on_increment_update(
+        self, Q: float, N: int, episode_return: float, prev_Q: float
+    ): ...
+
+    def on_episode_end(self, alpha: float, epsilon: float): ...
