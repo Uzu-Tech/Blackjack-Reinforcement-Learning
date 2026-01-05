@@ -8,4 +8,4 @@ if __name__ == "__main__":
   #  plot_strategy_soft(Q)
    # plot_strategy_pair(Q)
 
-    print(f"Reward: {round(100 * test_policy(basic_strategy, 100_000), 5)}%")
+    print(f"Reward: {round(100 * test_policy(basic_strategy, 10_000_000), 5)}%")

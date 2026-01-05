@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum
+from enum import Enum, IntEnum, auto
 from typing import TypeAlias, Callable
 
 import numpy as np
@@ -31,28 +31,20 @@ class Action(IntEnum):
     SPLIT = 3
 
 
-class Card(Enum):
-    ACE = 1
-    TWO = 2
-    THREE = 3
-    FOUR = 4
-    FIVE = 5
-    SIX = 6
-    SEVEN = 7
-    EIGHT = 8
-    NINE = 9
-    TEN = 10
-    JACK = 11
-    QUEEN = 12
-    KING = 13
-
-    @property
-    def bj_value(self) -> int:
-        if self in [Card.JACK, Card.QUEEN, Card.KING]:
-            return 10
-        elif self == Card.ACE:
-            return 11
-        return self.value
+class Card(IntEnum):
+    ACE = 0
+    TWO = auto()
+    THREE = auto()
+    FOUR = auto()
+    FIVE = auto()
+    SIX = auto()
+    SEVEN = auto()
+    EIGHT = auto()
+    NINE = auto()
+    TEN = auto()
+    JACK = auto()
+    QUEEN = auto()
+    KING = auto()
     
 
 def epsilon_greedy_policy(
@@ -87,7 +79,7 @@ def initialize_Q(value: float) -> np.ndarray:
         shape=(
             len(HandType),
             BLACKJACK_VALUE + 1,  # (0 - 21) should cover all possible hand values
-            Card.ACE.bj_value + 1,  # (0 - 11) should cover all dealer upcards
+            12,  # (0 - 11) should cover all dealer upcards
             2,  # Only two values for the bool
             len(Action),
         ),

@@ -1,18 +1,12 @@
 import random
 from typing import Callable
 
-from blackjack.env import (
-    BLACKJACK_VALUE,
-    Action,
-    Card,
-    Hand,
-    HandType,
-    State,
-    State_Action,
-)
+import src.game as cpp
+from blackjack.env import Action, Card, Hand, HandType, State, State_Action
 
 random.seed(30)
 
+CARDS = tuple(card for card in Card)
 
 def run_episode(
     policy: Callable[[State], Action],
@@ -96,7 +90,7 @@ def play_non_pair_hand(
             bet = 2
             break
 
-        if is_bust(hand):
+        if cpp.is_bust(hand):
             break
 
     episode_return = calculate_reward(hand, dealer_hand, bet, is_first_hand)
@@ -110,18 +104,20 @@ def play_non_pair_hand(
 def calculate_reward(
     hand: Hand, dealer_hand: Hand, bet: int, is_first_hand: bool
 ) -> float:
-    if is_first_hand and has_blackjack(hand):
-        if has_blackjack(dealer_hand):
+    if is_first_hand and cpp.has_blackjack(hand):
+        if cpp.has_blackjack(dealer_hand):
             return 0
         return 1.5
 
-    if is_bust(hand):
+    if cpp.is_bust(hand):
         return -bet
 
-    if is_bust(dealer_hand) or get_hand_value(dealer_hand) < get_hand_value(hand):
+    if cpp.is_bust(dealer_hand) or cpp.get_hand_value(dealer_hand) < cpp.get_hand_value(
+        hand
+    ):
         return bet
 
-    if get_hand_value(dealer_hand) > get_hand_value(hand):
+    if cpp.get_hand_value(dealer_hand) > cpp.get_hand_value(hand):
         return -bet
 
     return 0
@@ -146,68 +142,24 @@ def draw_cards(hand, dealer_hand):
 
 
 def play_dealer_hand(dealer_hand: Hand):
-    while get_hand_value(dealer_hand) < 17 or is_soft_17(dealer_hand):
+    while cpp.get_hand_value(dealer_hand) < 17 or cpp.is_soft_17(dealer_hand):
         deal_hand(dealer_hand)
-        if is_bust(dealer_hand):
+        if cpp.is_bust(dealer_hand):
             break
 
 
 def get_state(hand: Hand, upcard: Card) -> State:
-    hand_type = get_hand_type(hand)
+    hand_type = cpp.get_hand_type(hand)
     return (
         int(hand_type),
-        get_hand_value(hand) if hand_type != HandType.PAIR else hand[0].bj_value,
-        upcard.bj_value,
+        (
+            cpp.get_hand_value(hand)
+            if hand_type != HandType.PAIR
+            else cpp.get_card_value(hand[0])
+        ),
+        cpp.get_card_value(upcard),
         int(len(hand) == 2),
     )
-
-
-def get_hand_type(hand: Hand):
-    if hand[0] == hand[1] and len(hand) == 2:
-        return HandType.PAIR
-
-    elif ace_count := hand.count(Card.ACE):
-        # Value if all aces were counted as 1
-        lowest_value = sum(card.bj_value for card in hand) - ace_count * 10
-        if lowest_value <= 11:
-            # Since we can change one of the aces to 11 and still not go bust
-            return HandType.SOFT
-
-    return HandType.HARD
-
-
-def get_hand_value(hand: Hand):
-    # Calculates the highest value we can consider without going bust
-    ace_count = hand.count(Card.ACE)
-    hand_value = sum(card.bj_value for card in hand)
-    while hand_value > BLACKJACK_VALUE and ace_count > 0:
-        hand_value -= Card.ACE.bj_value - 1
-        ace_count -= 1
-
-    return hand_value
-
-
-def deal_hand(hand: Hand):
-    hand.append(random.choice([card for card in Card]))
-
-
-def has_blackjack(hand: Hand):
-    return (hand[0].bj_value + hand[1].bj_value) == BLACKJACK_VALUE and len(hand) == 2
-
-
-def is_bust(hand: Hand):
-    return get_hand_value(hand) > BLACKJACK_VALUE
-
-
-def is_soft_17(hand: Hand):
-    ace_count = hand.count(Card.ACE)
-    hand_value = sum(card.bj_value for card in hand)
-
-    while hand_value > BLACKJACK_VALUE and ace_count > 0:
-        hand_value -= Card.ACE.bj_value - 1
-        ace_count -= 1
-
-    return hand_value == 17 and ace_count != 0
 
 
 def is_ace_pair(hand: Hand):
@@ -216,3 +168,6 @@ def is_ace_pair(hand: Hand):
 
 def get_upcard(dealer_hand: Hand):
     return dealer_hand[0]
+
+def deal_hand(hand: Hand):
+    hand.append(CARDS[cpp.get_random_card()])

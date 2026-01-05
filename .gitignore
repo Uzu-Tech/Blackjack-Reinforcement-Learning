@@ -11,6 +11,9 @@ __pycache__/
 # Testing
 .pytest_cache/
 pytest.ini
+profiles/
+build/
+compile_flags.txt
 
 # Data files (Binary/Large files)
 *.npy
