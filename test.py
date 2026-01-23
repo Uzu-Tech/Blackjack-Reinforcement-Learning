@@ -1,5 +1,6 @@
 from blackjack.agent import test_policy
 from blackjack.basic_strategy import basic_strategy
+import os
 
 if __name__ == "__main__":
    # Q = np.load("Q_opt.npy")
