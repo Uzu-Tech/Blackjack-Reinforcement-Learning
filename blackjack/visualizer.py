@@ -1,5 +1,6 @@
 import numpy as np
 import plotly.express as px
+from pathlib import Path
 
 HAND_HARD = 0
 HAND_SOFT = 1
@@ -7,25 +8,20 @@ HAND_PAIR = 2
 
 ACTIONS = ["HIT", "STAND", "DOUBLE", "SPLIT"]
 
-def plot_sliding_window(arr: np.ndarray, window_size: float):
-    window = int(window_size * arr.size)
-    smoothed = np.convolve(arr, np.ones(window)/window, mode="valid")
-
-    fig = px.line(y=smoothed)
-    fig.show()
-
-def plot_strategy_hard(Q: np.ndarray):
+def plot_strategy_hard(Q: np.ndarray, save_path: Path):
     best = np.argmax(Q, axis=-1)
 
-    # only take hard hands with 2 cards
-    hard = best[HAND_HARD, :, :, 1]
+    useable_ace = 0
+    can_double = 1
+    can_split = 0
+    hard = best[:17, :, useable_ace, can_double, can_split]
 
     # valid player values 4–21, dealer 1–11
     fig = px.imshow(
-        hard[5:21, 2:12],
+        hard,
         labels=dict(x="Dealer Upcard", y="Player Total", color="Action"),
         x=list(range(2, 12)),
-        y=list(range(5, 21)),
+        y=list(range(4, 21)),
         color_continuous_scale="Viridis"
     )
     fig.update_coloraxes(
@@ -35,19 +31,23 @@ def plot_strategy_hard(Q: np.ndarray):
         )
     )
     fig.show()
+    fig.write_image(save_path / "hard_strategy.png", format="png")
 
-def plot_strategy_soft(Q: np.ndarray):
+def plot_strategy_soft(Q: np.ndarray, save_path: Path):
     best = np.argmax(Q, axis=-1)
 
     # only take hard hands with 2 cards
-    soft = best[HAND_SOFT, :, :, 1]
+    useable_ace = 1
+    can_double = 1
+    can_split = 0
+    soft = best[9:, :, useable_ace, can_double, can_split]
 
     # valid player values 4–21, dealer 1–11
     fig = px.imshow(
-        soft[13:21, 2:12],
+        soft,
         labels=dict(x="Dealer Upcard", y="Player Total", color="Action"),
         x=list(range(2, 12)),
-        y=list(range(13, 21)),
+        y=list(range(13, 22)),
         color_continuous_scale="Viridis"
     )
     fig.update_coloraxes(
@@ -57,16 +57,24 @@ def plot_strategy_soft(Q: np.ndarray):
         )
     )
     fig.show()
+    fig.write_image(save_path / "soft_strategy.png", format="png")
 
-def plot_strategy_pair(Q: np.ndarray):
-    best = np.argmax(Q, axis=-1)
+def plot_strategy_pair(Q: np.ndarray, save_path: Path):
+    best: np.ndarray = np.argmax(Q, axis=-1)
 
     # only take hard hands with 2 cards
-    pair = best[HAND_PAIR, :, :, 1]
+    useable_ace = 0
+    can_double = 1
+    can_split = 1
+    pair = best[0:19:2, :, useable_ace, can_double, can_split]
+
+    useable_ace = 1
+    soft12 = best[8, :, useable_ace, can_double, can_split]
+    pair = np.vstack([pair, soft12])
 
     # valid player values 4–21, dealer 1–11
     fig = px.imshow(
-        pair[2:12, 2:12],
+        pair,
         labels=dict(x="Dealer Upcard", y="Player Total", color="Action"),
         x=list(range(2, 12)),
         y=list(range(2, 12)),
@@ -79,3 +87,4 @@ def plot_strategy_pair(Q: np.ndarray):
         )
     )
     fig.show()
+    fig.write_image(save_path / "pair_strategy.png", format="png")

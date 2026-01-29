@@ -1,7 +1,13 @@
 {
     "cSpell.words": [
+        "Epsiodes",
         "flatnonzero",
         "sarsa",
         "UPCARDS"
-    ]
+    ],
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }

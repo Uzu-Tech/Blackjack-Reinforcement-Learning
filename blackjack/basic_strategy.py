@@ -1,3 +1,5 @@
+from blackjack.state_space import MIN_VALUE, NUM_UPCARDS
+
 # Shorthand for readability
 H = 0
 S = 1
@@ -54,7 +56,15 @@ STRATEGY_PAIR = {
 
 def basic_strategy(state: int) -> int:
     tables = [STRATEGY_HARD, STRATEGY_SOFT, STRATEGY_PAIR]
-    hand_value, upcard, useable_ace, can_double, can_split = decode_state(state)
+    can_split = state % 2
+    state //= 2
+    can_double = state % 2
+    state //= 2
+    useable_ace = state % 2
+    state //= 2
+    upcard = (state % NUM_UPCARDS) + 2  # dealer upcard rank (2..Ace)
+    state //= NUM_UPCARDS
+    hand_value = state + MIN_VALUE  # remaining value is player sum
 
     if not can_split:
         action = tables[useable_ace][hand_value][upcard - 2]
@@ -68,17 +78,3 @@ def basic_strategy(state: int) -> int:
     if action == "DS":
         return D if can_double else S
     return action
-
-def decode_state(idx):
-    # Extract in reverse order of encoding (LIFO)
-    can_split = idx % 2
-    idx //= 2
-    can_double = idx % 2
-    idx //= 2
-    usable_ace = idx % 2
-    idx //= 2
-    dealer_card = (idx % 10) + 2  # Add back the offset
-    idx //= 10
-    player_sum = idx + 4          # Remaining value is player_sum
-    
-    return (player_sum, dealer_card, bool(usable_ace), bool(can_double), bool(can_split))

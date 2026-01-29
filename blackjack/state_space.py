@@ -56,3 +56,18 @@ def fill_legal_actions(legal: np.ndarray):
 
 def flatten_Q(Q: np.ndarray) -> np.ndarray:
     return Q.reshape(-1, len(Action))
+
+
+def decode_state(state: int):
+    can_split = state % 2
+    state //= 2
+    can_double = state % 2
+    state //= 2
+    useable_ace = state % 2
+    state //= 2
+    upcard = (state % NUM_UPCARDS) + 2  # dealer upcard rank (2..Ace)
+    state //= NUM_UPCARDS
+    hand_value = state + MIN_VALUE  # remaining value is player sum
+    return State(
+        hand_value, upcard, bool(useable_ace), bool(can_double), bool(can_split)
+    )
